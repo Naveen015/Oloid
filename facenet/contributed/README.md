@@ -132,7 +132,7 @@ Calculating features for images
 Training classifier   
 Saved classifier model to file "/home/david/models/my_classifier.pkl"
 ```
-**Classification on the test set can be ran using:**       
+**- Classification on the test set can be ran using:**       
 `python src/classifier.py CLASSIFY ~/datasets/my_dataset/test/ ~/models/model-20170216-`       
 `091149.pb ~/models/my_classifier.pkl --batch_size 1000`       
 ```
@@ -156,8 +156,8 @@ Accuracy: 1.000
 ```
    
 This code is aimed to give some inspiration and ideas for how to use the face recognizer, but it is by no means a useful application by itself. Some additional things that could be needed for a real life application include:   
--Include face detection in a face detection and classification pipe line   
--Use a threshold for the classification probability to find unknown people instead of just using the class with the highest probability   
+- Include face detection in a face detection and classification pipe line   
+- Use a threshold for the classification probability to find unknown people instead of just using the class with the highest probability   
 
 ## 7. Run the application
 The face detection and recognition model can thus be used to detect faces on live video or a video file. It can be ran using:   
