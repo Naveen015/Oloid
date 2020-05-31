@@ -71,8 +71,8 @@ For this experiment we train a classifier using a subset of the LFW images. The 
  > - Test the classifier using embeddings from the test part of a dataset   
 
 **- Training a classifier on the training set part of the dataset is done as:**     
-`python src/classifier.py TRAIN /home/david/datasets/lfw/lfw_mtcnnalign_160`   
-`/home/david/models/model-20170216-091149.pb ~/models/lfw_classifier.pkl --batch_size 1000`   
+`python src/classifier.py TRAIN /home/naveen/datasets/lfw/lfw_mtcnnalign_160`   
+`/home/naveen/models/model-20170216-091149.pb ~/models/lfw_classifier.pkl --batch_size 1000`   
 `--min_nrof_images_per_class 40 --nrof_train_images_per_class 35 --use_split_dataset`    
    
 The output from the training is shown below:    
@@ -80,10 +80,10 @@ The output from the training is shown below:
 Number of classes: 19   
 Number of images: 665   
 Loading feature extraction model    
-Model filename: /home/david/models/model-20170216-091149.pb    
+Model filename: /home/naveen/models/model-20170216-091149.pb    
 Calculating features for images    
 Training classifier    
-Saved classifier model to file "/home/david/models/lfw_classifier.pkl"    
+Saved classifier model to file "/home/naveen/models/lfw_classifier.pkl"    
 ```
    
 **- The trained classifier can later be used for classification using the test set:**       
@@ -97,10 +97,10 @@ Here the test set part of the dataset is used for classification and the classif
 Number of classes: 19   
 Number of images: 1202   
 Loading feature extraction model   
-Model filename: /home/david/models/export/model-20170216-091149.pb   
+Model filename: /home/naveen/models/export/model-20170216-091149.pb   
 Calculating features for images   
 Testing classifier   
-Loaded classifier model from file "/home/david/lfw_classifier.pkl"   
+Loaded classifier model from file "/home/naveen/lfw_classifier.pkl"   
    0  Ariel Sharon: 0.583   
    1  Ariel Sharon: 0.611   
    2  Ariel Sharon: 0.670   
@@ -127,10 +127,10 @@ The training of the classifier takes a few seconds (after loading the pre-traine
 Number of classes: 10   
 Number of images: 50   
 Loading feature extraction model   
-Model filename: /home/david/models/model-20170216-091149.pb    
+Model filename: /home/naveen/models/model-20170216-091149.pb    
 Calculating features for images    
 Training classifier   
-Saved classifier model to file "/home/david/models/my_classifier.pkl"
+Saved classifier model to file "/home/naveen/models/my_classifier.pkl"
 ```
 **- Classification on the test set can be ran using:**       
 `python src/classifier.py CLASSIFY ~/datasets/my_dataset/test/ ~/models/model-20170216-`       
@@ -139,10 +139,10 @@ Saved classifier model to file "/home/david/models/my_classifier.pkl"
 Number of classes: 10   
 Number of images: 50   
 Loading feature extraction model   
-Model filename: /home/david/models/model-20170216-091149.pb   
+Model filename: /home/naveen/models/model-20170216-091149.pb   
 Calculating features for images   
 Testing classifier   
-Loaded classifier model from file "/home/david/models/my_classifier.pkl"   
+Loaded classifier model from file "/home/naveen/models/my_classifier.pkl"   
    0  Ariel Sharon: 0.452   
    1  Ariel Sharon: 0.376   
    2  Ariel Sharon: 0.426   
