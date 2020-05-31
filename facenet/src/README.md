@@ -66,7 +66,7 @@ For this experiment we train a classifier using a subset of the LFW images. The 
 
 **- Training a classifier on the training set part of the dataset is done as:**     
 `python src/classifier.py TRAIN /home/naveen/datasets/lfw/lfw_mtcnnalign_160`   
-`/home/david/models/model-20170216-091149.pb ~/models/lfw_classifier.pkl --batch_size 1000`   
+`/home/naveen/models/model-20170216-091149.pb ~/models/lfw_classifier.pkl --batch_size 1000`   
 `--min_nrof_images_per_class 40 --nrof_train_images_per_class 35 --use_split_dataset`    
    
 The output from the training is shown below:    
@@ -94,7 +94,7 @@ Loading feature extraction model
 Model filename: /home/naveen/models/export/model-20170216-091149.pb   
 Calculating features for images   
 Testing classifier   
-Loaded classifier model from file "/home/david/lfw_classifier.pkl"   
+Loaded classifier model from file "/home/naveen/lfw_classifier.pkl"   
    0  Ariel Sharon: 0.583   
    1  Ariel Sharon: 0.611   
    2  Ariel Sharon: 0.670   
@@ -136,7 +136,7 @@ Loading feature extraction model
 Model filename: /home/naveen/models/model-20170216-091149.pb   
 Calculating features for images   
 Testing classifier   
-Loaded classifier model from file "/home/david/models/my_classifier.pkl"   
+Loaded classifier model from file "/home/naveen/models/my_classifier.pkl"   
    0  Ariel Sharon: 0.452   
    1  Ariel Sharon: 0.376   
    2  Ariel Sharon: 0.426   
