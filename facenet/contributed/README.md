@@ -63,11 +63,11 @@ For this experiment we train a classifier using a subset of the LFW images. The 
 - Load a pretrained model for feature extraction    
 - Calculate embeddings for images in the dataset    
 - mode=TRAIN:    
- >Train the classifier using embeddings from the train part of a dataset   
- >Save the trained classification model as a python pickle    
--mode=CLASSIFY:   
- >Load a classification model    
- >Test the classifier using embeddings from the test part of a dataset   
+ > - Train the classifier using embeddings from the train part of a dataset   
+ > - Save the trained classification model as a python pickle    
+- mode=CLASSIFY:   
+ > - Load a classification model    
+ > - Test the classifier using embeddings from the test part of a dataset   
 
 **Training a classifier on the training set part of the dataset is done as:**     
 `python src/classifier.py TRAIN /home/david/datasets/lfw/lfw_mtcnnalign_160`   
