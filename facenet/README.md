@@ -4,52 +4,204 @@
 [travis]: http://travis-ci.org/davidsandberg/facenet
 
 This is a TensorFlow implementation of the face recognizer described in the paper
-["FaceNet: A Unified Embedding for Face Recognition and Clustering"](http://arxiv.org/abs/1503.03832). The project also uses ideas from the paper ["Deep Face Recognition"](http://www.robots.ox.ac.uk/~vgg/publications/2015/Parkhi15/parkhi15.pdf) from the [Visual Geometry Group](http://www.robots.ox.ac.uk/~vgg/) at Oxford.
+["FaceNet: A Unified Embedding for Face Recognition and Clustering"](http://arxiv.org/abs/1503.03832). The project also uses ideas from the paper ["Deep Face Recognition"](http://www.robots.ox.ac.uk/~vgg/publications/2015/Parkhi15/parkhi15.pdf) from the [Visual Geometry Group](http://www.robots.ox.ac.uk/~vgg/) at Oxford.    
+The official github repository can be found [here](https://github.com/davidsandberg/facenet.git).
 
-## Compatibility
-The code is tested using Tensorflow r1.7 under Ubuntu 14.04 with Python 2.7 and Python 3.5. The test cases can be found [here](https://github.com/davidsandberg/facenet/tree/master/test) and the results can be found [here](http://travis-ci.org/davidsandberg/facenet).
+## 1. Install Dependencies
+In the below description it is assumed that   
+- Tensorflow has been [installed](https://github.com/davidsandberg/facenet/wiki#1-install-tensorflow)   
+- the facenet [repo](https://github.com/davidsandberg/facenet) has been cloned, and   
+- the [required python modules](https://github.com/davidsandberg/facenet/blob/master/requirements.txt) has been installed.   
 
-## News
-| Date     | Update |
-|----------|--------|
-| 2018-04-10 | Added new models trained on Casia-WebFace and VGGFace2 (see below). Note that the models uses fixed image standardization (see [wiki](https://github.com/davidsandberg/facenet/wiki/Training-using-the-VGGFace2-dataset)). |
-| 2018-03-31 | Added a new, more flexible input pipeline as well as a bunch of minor updates. |
-| 2017-05-13 | Removed a bunch of older non-slim models. Moved the last bottleneck layer into the respective models. Corrected normalization of Center Loss. |
-| 2017-05-06 | Added code to [train a classifier on your own images](https://github.com/davidsandberg/facenet/wiki/Train-a-classifier-on-own-images). Renamed facenet_train.py to train_tripletloss.py and facenet_train_classifier.py to train_softmax.py. |
-| 2017-03-02 | Added pretrained models that generate 128-dimensional embeddings.|
-| 2017-02-22 | Updated to Tensorflow r1.0. Added Continuous Integration using Travis-CI.|
-| 2017-02-03 | Added models where only trainable variables has been stored in the checkpoint. These are therefore significantly smaller. |
-| 2017-01-27 | Added a model trained on a subset of the MS-Celeb-1M dataset. The LFW accuracy of this model is around 0.994. |
-| 2017&#8209;01&#8209;02 | Updated to run with Tensorflow r0.12. Not sure if it runs with older versions of Tensorflow though.   |
+## 2. Download the dataset
+**1. Download the unaligned images from internet**    
+In this case, create your own datset for training your own classifier and place it as a raw folder in a local directory`~/datasets`   
+**2. Download the unaligned LFW images from [here](http://vis-www.cs.umass.edu/lfw/lfw.tgz)**   
+In this case, extract it to the local directory`~/datasets`   
+```
+cd ~/datasets   
+mkdir -p lfw/raw   
+tar xvf ~/Downloads/lfw.tgz -C lfw/raw --strip-components=1   
+```
+## 3. Set the python path
+Set the environment variable `PYTHONPATH` to point to the `src` directory of the cloned repo. This is typically done something like this   
+```
+export PYTHONPATH=[...]/facenet/src   
+```
+where `[...]` should be replaced with the directory where the cloned facenet repo resides.   
 
-## Pre-trained models
-| Model name      | LFW accuracy | Training dataset | Architecture |
-|-----------------|--------------|------------------|-------------|
-| [20180408-102900](https://drive.google.com/open?id=1R77HmFADxe87GmoLwzfgMu_HY0IhcyBz) | 0.9905        | CASIA-WebFace    | [Inception ResNet v1](https://github.com/davidsandberg/facenet/blob/master/src/models/inception_resnet_v1.py) |
-| [20180402-114759](https://drive.google.com/open?id=1EXPBSXwTaqrSC0OhUdXNmKSh9qJUQ55-) | 0.9965        | VGGFace2      | [Inception ResNet v1](https://github.com/davidsandberg/facenet/blob/master/src/models/inception_resnet_v1.py) |
+## 4. Align the dataset
+For example, Alignment of the LFW dataset can be done using align_dataset_mtcnn in the align module.   
+    
+Alignment of the LFW dataset is done something like this:    
+```
+for N in {1..4}; do \   
+python src/align/align_dataset_mtcnn.py \   
+~/datasets/lfw/raw \   
+~/datasets/lfw/lfw_mtcnnpy_160 \    
+--image_size 160 \    
+--margin 32 \    
+--random_order \    
+--gpu_memory_fraction 0.25 \    
+& done    
+```
+The parameter `margin` controls how much wider aligned image should be cropped compared to the bounding box given by the face detector. 32 pixels with an image size of 160 pixels corresponds to a margin of 44 pixels with an image size of 182, which is the image size that has been used for training of the model below.    
 
-NOTE: If you use any of the models, please do not forget to give proper credit to those providing the training dataset as well.
+## 5. Download pre-trained model (optional)
+If you don not have your own trained model that you would like to test and easy way forward is to download a pre-trained model to run the test on. One such model can be found [here](https://drive.google.com/open?id=1EXPBSXwTaqrSC0OhUdXNmKSh9qJUQ55-). Download and extract the model and place in your favorite models directory (in this example we use `~/models/facenet/`). After extracting the archive there should be a new folder `20180402-114759` with the contents    
+```
+20180402-114759.pb   
+model-20180402-114759.ckpt-275.data-00000-of-00001    
+model-20180402-114759.ckpt-275.index    
+model-20180402-114759.meta    
+```
 
-## Inspiration
-The code is heavily inspired by the [OpenFace](https://github.com/cmusatyalab/openface) implementation.
+## 6. Train a classifier
+This tutorial describes how to train your own classifier on your own dataset. Here it is assumed that you have followed e.g. the guide Validate on LFW to install dependencies, clone the FaceNet repo, set the python path etc and aligned the LFW dataset (at least for the LFW experiment). In the examples below the frozen model `20170216-091149` is used. Using a frozen graph significantly speeds up the loading of the model.  
+    
+**1. Train a classifier on LFW:**    
+For this experiment we train a classifier using a subset of the LFW images. The LFW dataset is split into a training and a test set. Then a pretrained model is loaded, and this model is then used to generate features for the selected images. The pretrained model is typically trained on a much larger dataset in order to give decent performance (in this case a subset of the MS-Celeb-1M dataset).    
+- Split the dataset into train and test sets    
+- Load a pretrained model for feature extraction    
+- Calculate embeddings for images in the dataset    
+- mode=TRAIN:    
+ > - Train the classifier using embeddings from the train part of a dataset   
+ > - Save the trained classification model as a python pickle    
+- mode=CLASSIFY:   
+ > - Load a classification model    
+ > - Test the classifier using embeddings from the test part of a dataset   
 
-## Training data
-The [CASIA-WebFace](http://www.cbsr.ia.ac.cn/english/CASIA-WebFace-Database.html) dataset has been used for training. This training set consists of total of 453 453 images over 10 575 identities after face detection. Some performance improvement has been seen if the dataset has been filtered before training. Some more information about how this was done will come later.
-The best performing model has been trained on the [VGGFace2](https://www.robots.ox.ac.uk/~vgg/data/vgg_face2/) dataset consisting of ~3.3M faces and ~9000 classes.
+**- Training a classifier on the training set part of the dataset is done as:**     
+`python src/classifier.py TRAIN /home/naveen/datasets/lfw/lfw_mtcnnalign_160`   
+`/home/naveen/models/model-20170216-091149.pb ~/models/lfw_classifier.pkl --batch_size 1000`   
+`--min_nrof_images_per_class 40 --nrof_train_images_per_class 35 --use_split_dataset`    
+   
+The output from the training is shown below:    
+```
+Number of classes: 19   
+Number of images: 665   
+Loading feature extraction model    
+Model filename: /home/naveen/models/model-20170216-091149.pb    
+Calculating features for images    
+Training classifier    
+Saved classifier model to file "/home/naveen/models/lfw_classifier.pkl"    
+```
+   
+**- The trained classifier can later be used for classification using the test set:**       
+`python src/classifier.py CLASSIFY ~/datasets/lfw/lfw_mtcnnalign_160 ~/models/model-`   
+`20170216-091149.pb ~/models/lfw_classifier.pkl --batch_size 1000 --`   
+`min_nrof_images_per_class 40 --nrof_train_images_per_class 35 --use_split_dataset` 
+   
+Here the test set part of the dataset is used for classification and the classification result together with the classification probability is shown. The classification accuracy for this subset is ~0.98.    
+   
+```
+Number of classes: 19   
+Number of images: 1202   
+Loading feature extraction model   
+Model filename: /home/naveen/models/export/model-20170216-091149.pb   
+Calculating features for images   
+Testing classifier   
+Loaded classifier model from file "/home/naveen/lfw_classifier.pkl"   
+   0  Ariel Sharon: 0.583   
+   1  Ariel Sharon: 0.611   
+   2  Ariel Sharon: 0.670   
+...   
+...   
+...   
+1198  Vladimir Putin: 0.588   
+1199  Vladimir Putin: 0.623   
+1200  Vladimir Putin: 0.566   
+1201  Vladimir Putin: 0.651   
+Accuracy: 0.978   
+```
+   
+**2. Train a classifier on your own dataset:**    
+So maybe you want to automatically categorize your private photo collection. Or you have a security camera that you want to automatically recognize the members of your family. Then it's likely that you would like to train a classifier on your own dataset. In this case `classifier.py` program can be used also for this. I have created my own train and test datasets and aligned the datset as discussed above.   
+   
+**- The training of the classifier is done in a similar way as before:**    
+`python src/classifier.py TRAIN ~/datasets/my_dataset/train/ ~/models/model-20170216-`   
+`091149.pb ~/models/my_classifier.pkl --batch_size 1000` 
+   
+The training of the classifier takes a few seconds (after loading the pre-trained model) and the output is shown below. Since this is a very simple dataset the accuracy is very good.   
+   
+```
+Number of classes: 10   
+Number of images: 50   
+Loading feature extraction model   
+Model filename: /home/naveen/models/model-20170216-091149.pb    
+Calculating features for images    
+Training classifier   
+Saved classifier model to file "/home/naveen/models/my_classifier.pkl"
+```
+**- Classification on the test set can be ran using:**       
+`python src/classifier.py CLASSIFY ~/datasets/my_dataset/test/ ~/models/model-20170216-`       
+`091149.pb ~/models/my_classifier.pkl --batch_size 1000`       
+```
+Number of classes: 10   
+Number of images: 50   
+Loading feature extraction model   
+Model filename: /home/naveen/models/model-20170216-091149.pb   
+Calculating features for images   
+Testing classifier   
+Loaded classifier model from file "/home/naveen/models/my_classifier.pkl"   
+   0  Ariel Sharon: 0.452   
+   1  Ariel Sharon: 0.376   
+   2  Ariel Sharon: 0.426   
+...   
+...  
+...  
+  47  Vladimir Putin: 0.418   
+  48  Vladimir Putin: 0.453   
+  49  Vladimir Putin: 0.378   
+Accuracy: 1.000   
+```
+   
+This code is aimed to give some inspiration and ideas for how to use the face recognizer, but it is by no means a useful application by itself. Some additional things that could be needed for a real life application include:   
+- Include face detection in a face detection and classification pipe line   
+- Use a threshold for the classification probability to find unknown people instead of just using the class with the highest probability      
 
-## Pre-processing
+## 7. Evaluation on LFW
+The test is ran using `validate_on_lfw`:   
+    
+```
+python src/validate_on_lfw.py \   
+~/datasets/lfw/lfw_mtcnnpy_160 \   
+~/models/facenet/20180402-114759 \   
+--distance_metric 1 \   
+--use_flipped_images \   
+--subtract_mean \   
+--use_fixed_image_standardization   
+```
+   
+This will   
+- load the model,   
+- load and parse the text file with the image pairs,   
+- calculate the embeddings for all the images (as well as their horizontally flipped versions) in the test set,   
+- calculate the accuracy, validation rate (@FAR=-10e-3), the Area Under Curve (AUC) and the Equal Error Rate (EER) performance measures.   
+   
+A typical output from the the test looks like this:   
+   
+```
+Model directory: /home/naveen/models/20180402-114759/   
+Metagraph file: model-20180402-114759.meta   
+Checkpoint file: model-20180402-114759.ckpt-275   
+Runnning forward pass on LFW images   
+........................   
+Accuracy: 0.99650+-0.00252   
+Validation rate: 0.98367+-0.00948 @ FAR=0.00100   
+Area Under Curve (AUC): 1.000   
+Equal Error Rate (EER): 0.004   
+```
+   
+## 8. Run the application
+This is a real-time/recorded-video face detection and recognition project base  on opencv/tensorflow/mtcnn/facenet.    
+Face detection is based on [MTCNN](https://kpzhang93.github.io/MTCNN_face_detection_alignment/index.html).   
+Face embedding is based on [Facenet](https://arxiv.org/abs/1503.03832).   
+   
+**Workflow**
+![](https://github.com/shanren7/real_time_face_recognition/blob/master/images/real%20time%20face%20detection%20and%20recognition.jpg)   
+   
+The face detection and recognition model can thus be used to detect faces on live video or a video file. It can be ran using:   
+`python contributed/real_time_face_recognition.py`
 
-### Face alignment using MTCNN
-One problem with the above approach seems to be that the Dlib face detector misses some of the hard examples (partial occlusion, silhouettes, etc). This makes the training set too "easy" which causes the model to perform worse on other benchmarks.
-To solve this, other face landmark detectors has been tested. One face landmark detector that has proven to work very well in this setting is the
-[Multi-task CNN](https://kpzhang93.github.io/MTCNN_face_detection_alignment/index.html). A Matlab/Caffe implementation can be found [here](https://github.com/kpzhang93/MTCNN_face_detection_alignment) and this has been used for face alignment with very good results. A Python/Tensorflow implementation of MTCNN can be found [here](https://github.com/davidsandberg/facenet/tree/master/src/align). This implementation does not give identical results to the Matlab/Caffe implementation but the performance is very similar.
 
-## Running training
-Currently, the best results are achieved by training the model using softmax loss. Details on how to train a model using softmax loss on the CASIA-WebFace dataset can be found on the page [Classifier training of Inception-ResNet-v1](https://github.com/davidsandberg/facenet/wiki/Classifier-training-of-inception-resnet-v1) and .
-
-## Pre-trained models
-### Inception-ResNet-v1 model
-A couple of pretrained models are provided. They are trained using softmax loss with the Inception-Resnet-v1 model. The datasets has been aligned using [MTCNN](https://github.com/davidsandberg/facenet/tree/master/src/align).
-
-## Performance
-The accuracy on LFW for the model [20180402-114759](https://drive.google.com/open?id=1EXPBSXwTaqrSC0OhUdXNmKSh9qJUQ55-) is 0.99650+-0.00252. A description of how to run the test can be found on the page [Validate on LFW](https://github.com/davidsandberg/facenet/wiki/Validate-on-lfw). Note that the input images to the model need to be standardized using fixed image standardization (use the option `--use_fixed_image_standardization` when running e.g. `validate_on_lfw.py`).
